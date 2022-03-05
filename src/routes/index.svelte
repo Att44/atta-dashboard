@@ -8,6 +8,14 @@ import { each } from 'svelte/internal';
    	 if (error) alert(error.message); // alert if error
     }
 
+// 	let timetable = {
+// 	Monday: [],
+// 	Tuesday: [],
+// 	Wednesday: [],
+// 	Thursday: [],
+// 	Friday: [],
+//   };
+
   let timetable = {
     Monday: [
       {
@@ -224,6 +232,74 @@ import { each } from 'svelte/internal';
 	curStyle = style;
   }
 
+  function deleteTimeSlot(day, index) {
+	if (day === "Monday") {
+		timetable.Monday.splice(index, 1);
+		timetable = timetable;
+	} else if (day === "Tuesday") {
+		timetable.Tuesday.splice(index, 1);
+		timetable = timetable;
+	} else if (day === "Wednesday") {
+		timetable.Wednesday.splice(index, 1);
+		timetable = timetable;
+	} else if (day === "Thursday") {
+		timetable.Thursday.splice(index, 1);
+		timetable = timetable;
+	} else if (day === "Friday") {
+		timetable.Friday.splice(index, 1);
+		timetable = timetable;
+	}
+      saveEntry();
+  }
+  
+  function setTimeSlot(day, index, newName, newPeriod, newStyle) {
+	if (day === "Monday") {
+		timetable.Monday[index].name = newName;
+		timetable.Monday[index].period = newPeriod;
+		timetable.Monday[index].style = newStyle;
+	} else if (day === "Tuesday") {
+		timetable.Tuesday[index].name = newName;
+		timetable.Tuesday[index].period = newPeriod;
+		timetable.Tuesday[index].style = newStyle;
+	} else if (day === "Wednesday") {
+		timetable.Wednesday[index].name = newName;
+		timetable.Wednesday[index].period = newPeriod;
+		timetable.Wednesday[index].style = newStyle;
+	} else if (day === "Thursday") {
+		timetable.Thursday[index].name = newName;
+		timetable.Thursday[index].period = newPeriod;
+		timetable.Thursday[index].style = newStyle;
+	} else if (day === "Friday") {
+		timetable.Friday[index].name = newName;
+		timetable.Friday[index].period = newPeriod;
+		timetable.Friday[index].style = newStyle;
+	}
+	saveEntry();
+  }
+
+  async function saveEntry() {
+	const { error } = await supabase.from("studentEntries").upsert(
+  	{
+    	user_id: supabase.auth.user().id,
+    	timetable: timetable,
+  	},
+  	{ onConflict: "user_id" }
+	);
+	if (error) alert(error.message);
+  }
+
+  // Get entries
+  async function getEntries() {
+	const { data, error } = await supabase.from("studentEntries").select();
+	if (error) alert(error.message);
+
+	if (data != "") {
+  	timetable = data[0].timetable;
+	}
+  }
+
+  getEntries();
+
 
 </script>
 
@@ -393,10 +469,10 @@ import { each } from 'svelte/internal';
 		<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
 			Cancel
 		</button>
-		<button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+		<button type="button" on:click={() => deleteTimeSlot(curDay, curIndex)} class="btn btn-danger" data-bs-dismiss="modal">
 			Delete
 		</button>
-		<button	type="button" class="btn btn-primary" data-bs-dismiss="modal">
+		<button	type="button" on:click={() => setTimeSlot(curDay, curIndex, curName, curPeriod, curStyle)} class="btn btn-primary" data-bs-dismiss="modal">
 			Save changes
 		</button>
 	</div>
